@@ -1,0 +1,15 @@
+# Nothing in app/ is ever requested directly — these are includes.
+# config.php holds the database password.
+#
+# This lives inside the directory on purpose. The root .htaccess used
+# RedirectMatch with an absolute /watches/ path, which silently stops matching
+# the moment the site is served from a domain root instead of a subfolder.
+# A per-directory rule cannot be broken by moving the document root.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

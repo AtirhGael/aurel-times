@@ -1,0 +1,95 @@
+# Alex Clean Factory Watches — Apache configuration.
+# Deliberately minimal: this app has no front controller and every page is a
+# real file, so there is no routing to do here.
+
+# ---- Directory listings --------------------------------------------------
+Options -Indexes
+
+# ---- Default document ----------------------------------------------------
+# index.php must win over any leftover index.html.
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Pretty names for the generated endpoints. robots.txt is generated too —
+    # its paths and Sitemap URL are built from BASE_URL so they stay correct
+    # whether the store is served from /watches/ or from a domain root.
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+    RewriteRule ^feed\.xml$    feed.php    [QSA,L]
+    RewriteRule ^robots\.txt$  robots.php  [L]
+</IfModule>
+
+# ---- Internals must not be web-reachable ---------------------------------
+# app/ holds config.php with the database credentials; data/ holds the 1.6 MB
+# seed dump; scripts/ holds the offline extractor.
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(sql|json|py|md)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Primary protection is a Require-all-denied .htaccess inside each of app/,
+# data/ and scripts/ — those cannot break when the document root moves.
+# These patterns are belt-and-braces and are deliberately path-relative: an
+# absolute ^/watches/ prefix silently stops matching once the site is served
+# from a domain root, which is exactly when it matters most.
+RedirectMatch 404 (^|/)app/
+RedirectMatch 404 (^|/)data/
+RedirectMatch 404 (^|/)scripts/
+
+# setup.php refuses non-CLI requests on its own; this is defence in depth.
+<Files "setup.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</Files>
+
+# migrate.php is a privilege-escalation endpoint (it can promote an admin).
+# Loopback only, and it still requires a MIGRATE_TOKEN match on top.
+<Files "migrate.php">
+    <IfModule mod_authz_core.c>
+        Require local
+    </IfModule>
+</Files>
+
+# ---- Security headers ----------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    # HSTS is a one-way door: once a browser sees this it refuses plain HTTP for
+    # this domain for the full max-age, and there is no way to call that back
+    # from the server side. Uncomment only AFTER https://alexcleanwatchfactory.site
+    # is confirmed loading with a valid certificate. Drop includeSubDomains if any
+    # subdomain is not yet on HTTPS.
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# ---- Force HTTPS ---------------------------------------------------------
+# Active. Two conditions guard it, and both matter:
+#
+#   X-Forwarded-Proto  — shared hosting usually terminates TLS at a proxy, so
+#                        %{HTTPS} reads "off" on a request the client made over
+#                        HTTPS. Redirecting on %{HTTPS} alone is the classic
+#                        infinite redirect loop that takes the whole site down.
+#   HTTP_HOST          — localhost/127.0.0.1 are exempt so XAMPP keeps working
+#                        over plain http:// during development.
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ---- Static asset caching ------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/png  "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType text/css   "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</IfModule>

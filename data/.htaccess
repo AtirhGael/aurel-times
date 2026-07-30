@@ -1,0 +1,10 @@
+# data/ holds the 1.6 MB product seed dump. Not web content.
+# Per-directory so it survives the site moving to a domain root.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

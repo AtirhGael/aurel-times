@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------
+#  Secrets — never commit these
+# ---------------------------------------------------------------------
+# Holds the live cPanel database password. Copy config.example.php to
+# config.php on each machine and fill it in.
+app/config.php
+# Development-only DB override (XAMPP on 127.0.0.1:3307).
+app/config.local.php
+
+# Generated SQL seeds. seed.sql and seed-admin.sql carry the admin password
+# in plaintext plus its bcrypt hash; regenerate them with mysqldump rather
+# than tracking them. seed-products.sql is derived from data/seed_data.json.
+seed.sql
+seed-products.sql
+seed-admin.sql
+
+# Database dumps.
+deploy/
+*.sql.gz
+
+# Local tooling state. Includes terminal-internal-token, a live auth token for
+# the gstack daemon, plus per-machine pids/ports and browse logs.
+.gstack/
+.claude/
+
+# ---------------------------------------------------------------------
+#  Local noise
+# ---------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.bak
+*.orig
+*~
+
+node_modules/
+vendor/
+
+.vscode/
+.idea/
+*.code-workspace
