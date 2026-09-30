@@ -36,13 +36,13 @@ require __DIR__ . '/app/header.php';
       <?php else: foreach ($orders as $o): ?>
         <div class="p-3 mb-3 rounded" style="background:var(--card);border:1px solid var(--line)">
           <div class="d-flex justify-content-between">
-            <strong>Order #<?= (int)$o['id'] ?></strong>
+            <strong>Order #<?= str_pad((string)(int)$o['id'], 6, '0', STR_PAD_LEFT) ?></strong>
             <span class="badge" style="background:var(--gold);color:#151515"><?= h(ucfirst($o['status'])) ?></span>
           </div>
           <div class="text-muted small mb-2"><?= h($o['created_at']) ?></div>
           <?php foreach (($itemsByOrder[$o['id']] ?? []) as $it): ?>
             <div class="d-flex justify-content-between small">
-              <span><?= h(mb_strimwidth($it['name'], 0, 46, '…')) ?> <span class="text-muted">(<?= h($it['grade']) ?>) ×<?= (int)$it['qty'] ?></span></span>
+              <span><?= h(mb_strimwidth($it['name'], 0, 46, '…')) ?> <span class="text-muted"><?= ($it['grade'] ?? '') !== '' && $it['grade'] !== 'Standard' ? '(' . h($it['grade']) . ') ' : '' ?>×<?= (int)$it['qty'] ?></span></span>
               <span><?= money($it['price'] * $it['qty']) ?></span>
             </div>
           <?php endforeach; ?>

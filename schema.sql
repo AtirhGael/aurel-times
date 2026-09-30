@@ -1,4 +1,4 @@
--- Alex Clean Factory Watches — schema (MySQL 8 / MariaDB 10.4 compatible)
+-- Aurel Time — schema (MySQL 8 / MariaDB 10.4 compatible)
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 

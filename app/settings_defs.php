@@ -8,9 +8,9 @@
  *   - migrate.php and setup.php seed from exactly the same array.
  *
  * Field keys: label, type, default. Optional: hint, max, min, step, options,
- * placeholder, and `placeholder_value` => true to mark a shipped default as a
- * stand-in that must be replaced before launch (drives the admin dashboard
- * pre-launch checklist).
+ * placeholder, `placeholder_value` => true to mark a shipped default as a
+ * stand-in that must be replaced before launch, and `required` => true to flag
+ * the field while it is empty. Both drive the admin dashboard pre-launch checklist.
  *
  * Types: text | textarea | number | bool | select | email | url | tel
  */
@@ -27,28 +27,28 @@ return [
                 'hint'  => 'Used in the page title, footer and Organization schema.',
             ],
             'logo_text_a' => [
-                'label' => 'Logo text (first half)', 'type' => 'text', 'default' => 'ALEX CLEAN', 'max' => 40,
+                'label' => 'Logo text (first half)', 'type' => 'text', 'default' => 'AUREL TIME', 'max' => 40,
                 'hint'  => 'Rendered in the default colour, on the first line of the wordmark.',
             ],
             'logo_text_b' => [
-                'label' => 'Logo text (second half)', 'type' => 'text', 'default' => 'FACTORY WATCHES', 'max' => 40,
+                'label' => 'Logo text (second half)', 'type' => 'text', 'default' => 'LUXURY WATCHES', 'max' => 40,
                 'hint'  => 'Rendered smaller, in the accent colour, on the second line.',
             ],
             'tagline' => [
                 'label' => 'Tagline', 'type' => 'text', 'max' => 200,
-                'default' => 'Luxury timepieces, meticulously crafted and delivered worldwide.',
+                'default' => 'Precision timepieces, checked by hand and shipped worldwide.',
                 'hint'  => 'One line under the logo in the footer.',
             ],
             'legal_entity_name' => [
                 'label' => 'Legal entity name', 'type' => 'text', 'max' => 200,
-                'default' => 'Your Company Ltd', 'placeholder_value' => true,
+                'default' => 'Your Company Ltd', 'placeholder_value' => true, 'required' => true,
                 'hint'  => 'The registered company name. Appears in Terms and Privacy. Kept '
                          . 'deliberately generic: the pre-launch checklist flags a field while it '
                          . 'still equals this default, so shipping the real name here would re-flag '
                          . 'it the moment you actually enter it.',
             ],
             'company_reg_no' => [
-                'label' => 'Company / EIN number', 'type' => 'text', 'max' => 60, 'default' => '',
+                'label' => 'Companies House number', 'type' => 'text', 'max' => 60, 'default' => '',
                 'hint'  => 'Optional, but a real registration number is a strong trust signal.',
             ],
             'currency_symbol' => [
@@ -96,8 +96,8 @@ return [
             ],
             'phone' => [
                 'label' => 'Phone number', 'type' => 'tel', 'max' => 40,
-                'default' => '+1 (302) 555-0147', 'placeholder_value' => true,
-                'hint'  => 'The shipped default is inside the reserved 555-01xx fictional range '
+                'default' => '+44 20 7946 0000', 'placeholder_value' => true,
+                'hint'  => 'The shipped default is in the Ofcom reserved drama range (020 7946 0xxx) '
                          . 'so it cannot ring a stranger. Replace it with your real number.',
             ],
             'whatsapp' => [
@@ -106,30 +106,30 @@ return [
             ],
             'address_line1' => [
                 'label' => 'Address line 1', 'type' => 'text', 'max' => 200,
-                'default' => '123 Commerce Way', 'placeholder_value' => true,
+                'default' => '1 Example Street', 'placeholder_value' => true,
             ],
             'address_line2' => [
                 'label' => 'Address line 2', 'type' => 'text', 'max' => 200,
-                'default' => 'Suite 400', 'placeholder_value' => true,
+                'default' => '', 
             ],
             'city' => [
                 'label' => 'City', 'type' => 'text', 'max' => 120,
-                'default' => 'Wilmington', 'placeholder_value' => true,
+                'default' => 'Manchester', 'placeholder_value' => true,
             ],
             'region' => [
-                'label' => 'State / region', 'type' => 'text', 'max' => 120,
-                'default' => 'DE', 'placeholder_value' => true,
+                'label' => 'County', 'type' => 'text', 'max' => 120,
+                'default' => '',
             ],
             'postcode' => [
-                'label' => 'ZIP / postal code', 'type' => 'text', 'max' => 30,
-                'default' => '19801', 'placeholder_value' => true,
+                'label' => 'Postcode', 'type' => 'text', 'max' => 30,
+                'default' => 'M1 1AA', 'placeholder_value' => true,
             ],
             'country' => [
-                'label' => 'Country', 'type' => 'text', 'max' => 80, 'default' => 'United States',
+                'label' => 'Country', 'type' => 'text', 'max' => 80, 'default' => 'United Kingdom',
             ],
             'support_hours' => [
-                'label' => 'Support hours', 'type' => 'text', 'max' => 160,
-                'default' => 'Mon-Fri, 9:00 AM - 6:00 PM ET',
+                'label' => 'Support hours', 'type' => 'text', 'max' => 160, 'required' => true,
+                'default' => '',
                 'hint'  => 'State real hours you can actually answer. Do not claim 24/7 support you cannot provide.',
             ],
         ],
@@ -167,14 +167,12 @@ return [
                 'min' => 1, 'max' => 120,
             ],
             'ship_carriers' => [
-                'label' => 'Carriers', 'type' => 'text', 'max' => 200,
-                'default' => 'USPS, UPS, DHL Express',
+                'label' => 'Carriers', 'type' => 'text', 'max' => 200, 'required' => true,
+                'default' => '',
             ],
             'ship_countries_note' => [
-                'label' => 'Destinations note', 'type' => 'textarea', 'max' => 1000,
-                'default' => 'We ship to the United States, Canada, the United Kingdom, the European Union, '
-                           . 'Australia and New Zealand. Duties and import taxes, where applicable, are the '
-                           . 'responsibility of the recipient.',
+                'label' => 'Destinations note', 'type' => 'textarea', 'max' => 1000, 'required' => true,
+                'default' => '',
             ],
         ],
     ],
@@ -220,8 +218,8 @@ return [
             ],
             'meta_description' => [
                 'label' => 'Default meta description', 'type' => 'textarea', 'max' => 320,
-                'default' => 'Precision-built luxury timepieces with worldwide insured shipping, '
-                           . 'a 30-day return window and a 2-year international warranty.',
+                'default' => 'Precision timepieces checked by hand, with insured shipping, '
+                           . 'a 30-day return window and a 24-month warranty.',
                 'hint'  => 'Used on pages that do not set their own. Aim for 150-160 characters.',
             ],
             'meta_keywords' => [

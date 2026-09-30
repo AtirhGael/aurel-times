@@ -130,7 +130,11 @@ function placeholder_settings(): array
     $stale = [];
     foreach (settings_defs() as $groupKey => $group) {
         foreach ($group['fields'] as $key => $def) {
-            if (!empty($def['placeholder_value']) && setting_is_default($key)) {
+            $stillDefault = !empty($def['placeholder_value']) && setting_is_default($key);
+            // `required` fields fail when blank: an empty legal name renders the
+            // Terms as "operated by ." and passed the default-only check unseen.
+            $missing      = !empty($def['required']) && trim(setting($key)) === '';
+            if ($stillDefault || $missing) {
                 $stale[$key] = [
                     'label' => $def['label'],
                     'group' => $group['label'],

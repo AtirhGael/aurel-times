@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL))  $errors[] = 'A valid email is required.';
     if ($address === '')                             $errors[] = 'Street address is required.';
     if ($city === '')                                $errors[] = 'City is required.';
-    if ($postcode === '')                            $errors[] = 'ZIP / postal code is required.';
+    if ($postcode === '')                            $errors[] = 'Postcode is required.';
     if ($country === '')                             $errors[] = 'Country is required.';
     if (!$cart)                                      $errors[] = 'Your cart is empty.';
 
@@ -243,11 +243,11 @@ require __DIR__ . '/app/header.php';
             <input name="city" class="form-control" required value="<?= h($_POST['city'] ?? '') ?>">
           </div>
           <div class="col-md-4">
-            <label class="form-label small text-muted">State / region</label>
+            <label class="form-label small text-muted">County (optional)</label>
             <input name="region" class="form-control" value="<?= h($_POST['region'] ?? '') ?>">
           </div>
           <div class="col-md-3">
-            <label class="form-label small text-muted">ZIP / postal *</label>
+            <label class="form-label small text-muted">Postcode *</label>
             <input name="postcode" class="form-control" required value="<?= h($_POST['postcode'] ?? '') ?>">
           </div>
         </div>
@@ -290,7 +290,7 @@ require __DIR__ . '/app/header.php';
           <li>Insured delivery in <?= h(delivery_estimate()) ?></li>
           <li><?= setting_int('return_window_days') ?>-day returns ·
               <a class="text-gold" href="<?= h(page_url('return-policy')) ?>">policy</a></li>
-          <li><?= setting_int('warranty_months') ?>-month international warranty</li>
+          <li><?= setting_int('warranty_months') ?>-month warranty</li>
         </ul>
       </div>
     </div>

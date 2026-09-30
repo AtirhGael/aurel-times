@@ -3,24 +3,21 @@
  * Google Shopping product feed (RSS 2.0 + the g: namespace).
  *
  * ---------------------------------------------------------------------------
- * DO NOT SUBMIT THIS FEED TO GOOGLE MERCHANT CENTER while product titles carry
- * third-party trademarks (Rolex, Patek Philippe, Audemars Piguet, ...) or while
- * the store describes its goods as replicas.
+ * Every item is sold under the house brand (setting site_name, "Aurel Time").
+ * The brands table holds the six collections, which go into g:product_type.
  *
- * Merchant Center's counterfeit policy is enforced by reading product titles,
- * not by reading policy pages. It results in immediate account suspension with
- * no warning, and suspensions for counterfeit goods are not appealable in
- * practice. Adding shipping, return and refund pages does not change that
- * outcome — rebranding the catalog to your own marque does.
- *
- * The feed is built and ready for the day that happens. Until then, leave the
- * feed_token setting empty, which disables this endpoint entirely.
+ * One gate remains before submitting. Merchant Center also reads the product
+ * IMAGE, and products.image still points at the supplier CDN, showing dials
+ * with third-party trademarks on them. Submitting on those images invites the
+ * same suspension the titles used to. Replace the imagery with your own
+ * photography first, then set feed_token to enable this endpoint.
  * ---------------------------------------------------------------------------
  *
  * Access: /feed.php?token=<feed_token setting>   (or /feed.xml?token=...)
  */
 declare(strict_types=1);
 require_once __DIR__ . '/app/helpers.php';
+require_once __DIR__ . '/app/_schema.php';
 
 $token = setting('feed_token');
 if ($token === '' || !hash_equals($token, (string)($_GET['token'] ?? ''))) {
@@ -30,8 +27,9 @@ if ($token === '' || !hash_equals($token, (string)($_GET['token'] ?? ''))) {
 
 header('Content-Type: application/xml; charset=utf-8');
 
-$currency = setting('currency_code') !== '' ? setting('currency_code') : 'USD';
-$country  = stripos(setting('country'), 'United Kingdom') !== false ? 'GB' : 'US';
+$currency = setting('currency_code') !== '' ? setting('currency_code') : 'GBP';
+$country  = store_country_code();
+$house    = setting('site_name');
 $shipRate = shipping_cost(0.0); // worst case: an order below any free threshold
 
 $pdo = db();
@@ -64,7 +62,7 @@ foreach ($rows as $p) {
     }
     $desc = trim(strip_tags((string)$p['description']));
     if ($desc === '') {
-        $desc = $p['brand'] . ' ' . $p['name'];
+        $desc = $p['name'] . ', from the ' . $p['brand'] . ' collection.';
     }
     $link = abs_url('product.php?handle=' . rawurlencode((string)$p['handle']));
 
@@ -87,16 +85,18 @@ foreach ($rows as $p) {
 
     echo '    <g:availability>' . ((int)$p['any_stock'] === 1 ? 'in_stock' : 'out_of_stock') . "</g:availability>\n";
     echo '    <g:condition>' . $x((string)($p['item_condition'] ?: 'new')) . "</g:condition>\n";
-    echo '    <g:price>' . number_format($price, 2, '.', '') . ' ' . $x($currency) . "</g:price>\n";
-
+    // Exactly one g:price per item. With a genuine compare_at_price, g:price is the
+    // reference and g:sale_price the selling price; otherwise g:price is the price.
     $compare = (float)($p['compare_at_price'] ?? 0);
     if ($compare > $price) {
-        // sale_price semantics: g:price is the reference, g:sale_price the offer.
         echo '    <g:price>' . number_format($compare, 2, '.', '') . ' ' . $x($currency) . "</g:price>\n";
         echo '    <g:sale_price>' . number_format($price, 2, '.', '') . ' ' . $x($currency) . "</g:sale_price>\n";
+    } else {
+        echo '    <g:price>' . number_format($price, 2, '.', '') . ' ' . $x($currency) . "</g:price>\n";
     }
 
-    echo '    <g:brand>' . $x((string)$p['brand']) . "</g:brand>\n";
+    echo '    <g:brand>' . $x($house) . "</g:brand>\n";
+    echo '    <g:product_type>' . $x('Watches > ' . $p['brand'] . ' collection') . "</g:product_type>\n";
     $hasId = false;
     if (!empty($p['gtin'])) { echo '    <g:gtin>' . $x((string)$p['gtin']) . "</g:gtin>\n"; $hasId = true; }
     if (!empty($p['mpn']))  { echo '    <g:mpn>' . $x((string)$p['mpn']) . "</g:mpn>\n";  $hasId = true; }

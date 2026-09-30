@@ -1,8 +1,68 @@
-# Deploying to alexcleanwatchfactory.site
+# Deploying to aureltime.site
 
 Target: cPanel shared hosting. Database `dieuaxvb_watches`.
 
 Work top to bottom. Step 6 (search indexing) is deliberately last.
+
+> **The store is already live with the old catalogue.** You are not doing a
+> fresh deploy — do section 0 below, not sections 1–2.
+
+---
+
+## 0. Aurel Time rollout (existing live store)
+
+The store is now **Aurel Time**: six collections (Tideline, Circuit, Transit,
+Ascot, Monolith, Datum), a black-and-gold theme, one price per watch, UK policy
+pages and no generated reviews. The live domain moves to **aureltime.site**.
+
+**Before anything else:** point `aureltime.site` at this hosting account, issue
+its SSL certificate, and create the mailboxes `contact@`, `support@` and
+`orders@aureltime.site`. The settings below already use those addresses.
+
+**Upload** every changed PHP file and the new `assets/brand/` folder. Do **not**
+upload `assets/banners/` or `assets/default/`: the banners are the old site's
+third-party campaign artwork and nothing links to either folder any more. Delete
+them from the server if they are there.
+
+**Then import, in this order** (regenerate both first with
+`php scripts/make-catalog-dump.php`):
+
+| Order | File | Effect |
+|---|---|---|
+| 1 | `seed-products.sql` | Wipes and reloads brands, products, product_images, variants (1 per product) |
+| 2 | `deploy/rebrand-settings.sql` | Deletes all reviews; upserts identity, email, shipping and share-image settings; rewrites the 7 policy pages |
+
+Both are re-runnable.
+
+**What survives:** users, orders, order_items, contact_messages and every
+setting not listed in the patch.
+
+**Then confirm on the live site:**
+
+```
+https://aureltime.site/                    -> title reads "Aurel Time", black & gold
+https://aureltime.site/shop.php?brand=tideline
+https://aureltime.site/terms-of-service.php  -> England and Wales, no blank sentences
+```
+
+### Do not import `seed.sql`
+
+`seed.sql` and `deploy/seed.sql.gz` are the **full** dump and still hold the
+pre-rebrand counterfeit catalogue. Importing either would undo the rebrand on a
+live store. Both now begin with a statement that deliberately fails
+(`Table '...THIS_SEED_IS_STALE...' doesn't exist`), which aborts the import
+before any `DROP TABLE` runs — verified against a scratch database with all 11
+tables still standing afterwards. Regenerate them from the de-branded database
+before using them for a genuinely empty install.
+
+### Still open before advertising
+
+`products.image` still points at `cdn.febdovoimage.com` and those photographs
+show third-party trademarked dials. De-branding the text did not change the
+pictures. (The homepage banners that had the same problem are gone; the hero
+is now built from the logo.) Replace the product photos, then re-run
+`php scripts/make-catalog-dump.php` and re-import. Until that is done, do not
+submit the feed to Merchant Center and do not flip `robots_index`.
 
 ---
 
@@ -22,6 +82,11 @@ unreachable. FTP clients hide dotfiles by default; turn hidden files **on** and
 confirm all four `.htaccess` files arrived.
 
 ## 2. Import the database
+
+> **Only for a genuinely empty database.** If the store is already live, go back
+> to section 0. Both files named here are currently **stale** — they predate the
+> de-branding and carry the counterfeit catalogue, and both are guarded with a
+> deliberate abort. Regenerate them from the de-branded database before use.
 
 In cPanel → phpMyAdmin, select `dieuaxvb_watches`, then Import:
 
@@ -52,7 +117,9 @@ see *Known issues* for why reviews are excluded.
 ### Reloading only the catalog later
 
 `seed-products.sql` (or `deploy/seed-products.sql.gz`) reloads **just** the
-1,140 products, 6,415 images, 3,192 variants and 9 brands. It creates no tables
+1,140 products, 6,415 images, 3,192 variants and 6 collections. Regenerate it
+with `php scripts/make-catalog-dump.php`, which refuses to write a file
+containing a trademark. It creates no tables
 and leaves `settings`, `content_pages`, `users` and any real `orders` untouched,
 so it is the file to use for a catalog refresh on a store that is already live.
 
@@ -112,10 +179,10 @@ line to change.
 ## 3. Confirm it came up
 
 ```
-https://alexcleanwatchfactory.site/
-https://alexcleanwatchfactory.site/shop.php
-https://alexcleanwatchfactory.site/robots.txt
-https://alexcleanwatchfactory.site/sitemap.xml
+https://aureltime.site/
+https://aureltime.site/shop.php
+https://aureltime.site/robots.txt
+https://aureltime.site/sitemap.xml
 ```
 
 Then confirm the internals are sealed — **all four must return 403 or 404**:
@@ -129,7 +196,7 @@ going further: that file contains the database password.
 
 ## 4. Fill the remaining business facts
 
-Admin → Settings, at `https://alexcleanwatchfactory.site/admin/`.
+Admin → Settings, at `https://aureltime.site/admin/`.
 
 Two admin accounts ship in the seed: `watches@alexcleanwatchfactory.site` and
 `atirhgael78@gmail.com`. The password for the first is in the header of
@@ -143,32 +210,27 @@ and the field is `<input type="email">`, so a bare `watches` cannot be submitted
 > and `seed.sql` from the server. Both carry it in plaintext.
 
 Already set: store name, address, phone, WhatsApp, currency (GBP/£), timezone
-(Europe/London), return window, warranty, and all three email addresses
-(`contact@alexcleanwatchfactory.site`).
+(Europe/London), return window, warranty, support hours, carriers, destinations
+and the three `@aureltime.site` email addresses.
 
-Still empty, and each one currently prints a broken sentence on a live page:
-
-| Setting | Where the gap shows |
-|---|---|
-| `legal_entity_name` | Privacy Policy renders *"what personal information&nbsp;&nbsp;collects"*. Terms says *"operated by ,"*. Needs your **registered company name**. |
-| `support_hours` | FAQ and About Us render *"We answer ."* |
-| `ship_carriers` | Privacy Policy renders *"shipping carriers ()"*. This string is a disclosure of who receives customer addresses — name only carriers you actually use. |
-
-The admin dashboard's pre-launch checklist tracks these.
+Still empty: `legal_entity_name` and `company_reg_no`. Pages no longer print a
+broken sentence for them (the renderer drops any line whose setting is empty),
+but UK law requires the trader's legal name and, for a company, its number. The
+admin dashboard's pre-launch checklist flags them until they are filled.
 
 ## 5. Point Chatway at the domain
 
 The widget (`PW016Uld6lq2`) is wired and gated on a setting, but Chatway matches
 a widget to the domains registered in your dashboard — which is why it does not
-appear on `localhost`. Add `alexcleanwatchfactory.site` in the Chatway dashboard,
+appear on `localhost`. Add `aureltime.site` in the Chatway dashboard,
 then load the site and confirm the bubble appears bottom-right.
 
 Chatway swallows its own errors (`logError(e){}` is empty), so a domain mismatch
 looks exactly like nothing happening — no console error to go on.
 
-> The Privacy Policy still tells visitors only a strictly necessary session
-> cookie is used. Chatway sets its own. Correct that at **Admin → Pages →
-> Privacy Policy** before running chat on the live site.
+> The Privacy Policy now discloses the Chatway cookies. UK PECR still expects
+> consent before non-essential cookies are set; add a consent prompt before
+> relying on chat at scale.
 
 ## 6. HTTPS, then HSTS, then indexing — in that order
 
@@ -212,15 +274,18 @@ the production import; the table ships empty and `AggregateRating` is only emitt
 when real reviews exist. Do not import them.
 
 **No payment gateway.** Checkout records the order and emails it, it does not
-charge. Orders are created `pending` and the confirmation says so.
+charge. Orders are created `pending`, and the checkout, confirmation email,
+Terms and FAQ all say payment is arranged by email before dispatch. Google
+Merchant Center expects an online checkout: add one before submitting the feed.
 
 **Email needs configuring.** `app/mail.php` uses PHP `mail()`. Every caller
 writes to the database first and treats send failure as non-fatal, so enquiries
 and orders are never lost — but confirmation emails will not arrive until cPanel
 mail is set up for the domain.
 
-**Do not run `migrate.php --force-pages`.** It rewrites all seven policy bodies
-and would revert the hand-edited England-and-Wales governing-law clause in Terms.
+`migrate.php --force-pages` is now safe: the defaults in `app/page_defaults.php`
+are the UK wording, so it rewrites the pages to match what the patch installs.
 
-**Do not run `setup.php`.** It drops every table and reseeds — including the
-3,990 placeholder reviews.
+**Do not run `setup.php`.** It drops every table and reseeds from
+`data/seed_data.json`, which is the original counterfeit catalogue. It no longer
+generates reviews, but the catalogue it loads must never reach a live store.

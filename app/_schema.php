@@ -10,6 +10,24 @@
 declare(strict_types=1);
 require_once __DIR__ . '/helpers.php';
 
+/**
+ * ISO 3166-1 alpha-2 code for the store country. schema.org and Merchant Center
+ * both expect the code ("GB"), not the display name the settings hold.
+ */
+function store_country_code(): string
+{
+    $c = trim(setting('country'));
+    if (preg_match('/^[A-Za-z]{2}$/', $c)) {
+        return strtoupper($c);
+    }
+    $map = [
+        'united kingdom' => 'GB', 'uk' => 'GB', 'great britain' => 'GB', 'england' => 'GB',
+        'scotland' => 'GB', 'wales' => 'GB', 'northern ireland' => 'GB',
+        'united states' => 'US', 'usa' => 'US', 'ireland' => 'IE',
+    ];
+    return $map[strtolower($c)] ?? 'GB';
+}
+
 /** PostalAddress, or null when no address has been configured. */
 function schema_address(): ?array
 {
@@ -23,7 +41,7 @@ function schema_address(): ?array
     if ($city !== '')                      $addr['addressLocality'] = $city;
     if (setting('region') !== '')          $addr['addressRegion']   = setting('region');
     if (setting('postcode') !== '')        $addr['postalCode']      = setting('postcode');
-    if (setting('country') !== '')         $addr['addressCountry']  = setting('country');
+    if (setting('country') !== '')         $addr['addressCountry']  = store_country_code();
     return $addr;
 }
 
@@ -49,9 +67,9 @@ function schema_organization(): array
     if (setting('tagline') !== '') {
         $org['description'] = setting('tagline');
     }
-    if (setting('og_image') !== '') {
-        $org['logo'] = setting('og_image');
-    }
+    // The square brand logo, not og_image: that is a 1200x630 share card, and
+    // Google wants a logo it can crop to a square.
+    $org['logo'] = abs_url('assets/brand/aurel-time-logo-square.png');
     if (($addr = schema_address()) !== null) {
         $org['address'] = $addr;
     }
@@ -59,7 +77,8 @@ function schema_organization(): array
     $contact = ['@type' => 'ContactPoint', 'contactType' => 'customer service'];
     if (setting('phone') !== '')         $contact['telephone'] = setting('phone');
     if (setting('support_email') !== '') $contact['email']     = setting('support_email');
-    if (setting('support_hours') !== '') $contact['hoursAvailable'] = setting('support_hours');
+    // hoursAvailable is omitted: it must be OpeningHoursSpecification, and the
+    // setting is free text. A plain string there fails validation.
     if (isset($contact['telephone']) || isset($contact['email'])) {
         $org['contactPoint'] = [$contact];
         if (isset($contact['telephone'])) {
@@ -124,7 +143,7 @@ function schema_breadcrumb(array $trail): array
  */
 function schema_product(array $p, array $variants = [], ?array $reviewStats = null): array
 {
-    $currency = setting('currency_code') !== '' ? setting('currency_code') : 'USD';
+    $currency = setting('currency_code') !== '' ? setting('currency_code') : 'GBP';
     $url      = abs_url('product.php?handle=' . rawurlencode((string)$p['handle']));
 
     $node = [
@@ -139,8 +158,11 @@ function schema_product(array $p, array $variants = [], ?array $reviewStats = nu
     if (!empty($p['image'])) {
         $node['image'] = [(string)$p['image']];
     }
+    // The brand is the house, not the collection. brand_name carries the
+    // collection (the brands table holds collections since the rebrand).
+    $node['brand'] = ['@type' => 'Brand', 'name' => setting('site_name')];
     if (!empty($p['brand_name'])) {
-        $node['brand'] = ['@type' => 'Brand', 'name' => (string)$p['brand_name']];
+        $node['category'] = (string)$p['brand_name'] . ' collection';
     }
     if (!empty($p['mpn']))  $node['mpn']  = (string)$p['mpn'];
     if (!empty($p['gtin'])) $node['gtin'] = (string)$p['gtin'];
@@ -185,6 +207,7 @@ function schema_product(array $p, array $variants = [], ?array $reviewStats = nu
                 'itemCondition' => $condition,
                 'url'           => $url,
             ];
+        $node['offers'] += schema_offer_policies(min($prices), $currency);
     }
 
     if ($reviewStats && (int)($reviewStats['count'] ?? 0) > 0) {
@@ -195,4 +218,57 @@ function schema_product(array $p, array $variants = [], ?array $reviewStats = nu
         ];
     }
     return $node;
+}
+
+/**
+ * shippingDetails and hasMerchantReturnPolicy for an Offer, built from the same
+ * settings that drive the shipping and returns pages, so the markup cannot drift
+ * from what the policy pages promise. Covers the home country only; other
+ * destinations are described in ship_countries_note.
+ */
+function schema_offer_policies(float $price, string $currency): array
+{
+    $country = store_country_code();
+    $out = [
+        'shippingDetails' => [
+            '@type'        => 'OfferShippingDetails',
+            'shippingRate' => [
+                '@type'    => 'MonetaryAmount',
+                'value'    => number_format(shipping_cost($price), 2, '.', ''),
+                'currency' => $currency,
+            ],
+            'shippingDestination' => ['@type' => 'DefinedRegion', 'addressCountry' => $country],
+            'deliveryTime' => [
+                '@type'        => 'ShippingDeliveryTime',
+                'handlingTime' => [
+                    '@type' => 'QuantitativeValue', 'minValue' => 0,
+                    'maxValue' => setting_int('ship_processing_days'), 'unitCode' => 'DAY',
+                ],
+                'transitTime' => [
+                    '@type' => 'QuantitativeValue',
+                    'minValue' => setting_int('ship_delivery_min_days', 5),
+                    'maxValue' => setting_int('ship_delivery_max_days', 20), 'unitCode' => 'DAY',
+                ],
+            ],
+        ],
+    ];
+
+    $days = setting_int('return_window_days');
+    $out['hasMerchantReturnPolicy'] = $days > 0
+        ? [
+            '@type'                => 'MerchantReturnPolicy',
+            'applicableCountry'    => $country,
+            'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+            'merchantReturnDays'   => $days,
+            'returnMethod'         => 'https://schema.org/ReturnByMail',
+            'returnFees'           => setting('return_shipping_paid_by') === 'store'
+                ? 'https://schema.org/FreeReturn'
+                : 'https://schema.org/ReturnFeesCustomerResponsibility',
+        ]
+        : [
+            '@type'                => 'MerchantReturnPolicy',
+            'applicableCountry'    => $country,
+            'returnPolicyCategory' => 'https://schema.org/MerchantReturnNotPermitted',
+        ];
+    return $out;
 }

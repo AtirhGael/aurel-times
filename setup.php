@@ -6,7 +6,6 @@
  *
  *   C:\xampp\php\php.exe setup.php                 # refuses if data exists
  *   C:\xampp\php\php.exe setup.php --force         # wipe and reseed anyway
- *   C:\xampp\php\php.exe setup.php --demo-reviews  # also generate sample reviews
  *   C:\xampp\php\php.exe setup.php --admin-email=you@example.com --admin-password=secret
  *
  * Without --admin-password a strong one is generated and printed once.
@@ -27,7 +26,6 @@ if (PHP_SAPI !== 'cli') {
 
 $argvOpts    = $argv ?? [];
 $force       = in_array('--force', $argvOpts, true);
-$demoReviews = in_array('--demo-reviews', $argvOpts, true);
 
 /** Read a --name=value argument. */
 function opt_value(array $argvOpts, string $name): ?string
@@ -112,47 +110,9 @@ function slug(string $s): string {
     return trim((string)$s, '-') ?: 'brand';
 }
 
-// Sample review content (the source mirror renders reviews client-side, so we
-// synthesize plausible demo reviews deterministically per product).
-//
-// OFF BY DEFAULT — pass --demo-reviews to generate them. Machine-generated
-// text presented as genuine customer reviews is prohibited by the FTC's 2024
-// rule on fake reviews and carries civil penalties, and marking it up as
-// schema.org AggregateRating is a separate structured-data violation.
-// Anything already seeded can be purged from admin/reviews.php.
-const REV_AUTHORS = ['James W.','Michael T.','David R.','Robert K.','Chris P.','Daniel L.','Andrew S.',
-    'Marco B.','Ethan H.','William C.','Lucas M.','Nathan G.','Oliver F.','Ryan D.','Kevin A.',
-    'Sophie L.','Emma R.','Olivia P.','Grace T.','Hannah M.'];
-const REV_BODIES = [
-    'Absolutely stunning timepiece. The finishing is impeccable and it keeps perfect time.',
-    'Exceeded my expectations. Feels substantial on the wrist and the movement is smooth.',
-    'Fast, discreet shipping and the watch is flawless. Highly recommend.',
-    'The dial detail is incredible in person. Photos do not do it justice.',
-    'Second purchase from here — quality is consistent and customer service is top notch.',
-    'Weight and finish feel exactly right. Very happy with this one.',
-    'Great value for the craftsmanship. Comfortable bracelet and solid clasp.',
-    'Received it within a week. Packaging was premium and the watch is gorgeous.',
-    'Accuracy has been excellent over the first month. No complaints at all.',
-    'A real head-turner. Build quality is better than I expected.',
-    'Beautiful piece, arrived exactly as described. Will buy again.',
-    'The lume is strong and the crown action is crisp. Delighted.',
-];
-
-/** Deterministic sample reviews for a product id. */
-function sample_reviews(int $seed): array {
-    mt_srand($seed);
-    $count = 2 + ($seed % 4); // 2..5
-    $out = [];
-    for ($i = 0; $i < $count; $i++) {
-        $rating = [5,5,5,4,5,4,3][mt_rand(0, 6)]; // skewed positive
-        $out[] = [
-            'author' => REV_AUTHORS[mt_rand(0, count(REV_AUTHORS) - 1)],
-            'rating' => $rating,
-            'body'   => REV_BODIES[mt_rand(0, count(REV_BODIES) - 1)],
-        ];
-    }
-    return $out;
-}
+// No reviews are seeded. The old --demo-reviews generator wrote machine-made
+// text presented as customer reviews, which UK law bans (DMCC Act 2024) and
+// Google treats as structured-data spam. Reviews come only from real buyers.
 
 $pdo->beginTransaction();
 
@@ -177,9 +137,8 @@ $insProd = $pdo->prepare(
 );
 $insImg = $pdo->prepare('INSERT INTO product_images (product_id, url, position) VALUES (?, ?, ?)');
 $insVar = $pdo->prepare('INSERT INTO variants (product_id, grade, price, sku, in_stock) VALUES (?, ?, ?, ?, ?)');
-$insRev = $pdo->prepare('INSERT INTO reviews (product_id, author, rating, body) VALUES (?, ?, ?, ?)');
 
-$nP = $nI = $nV = $nR = 0;
+$nP = $nI = $nV = 0;
 $seenHandles = [];
 foreach ($products as $p) {
     $handle = $p['handle'];
@@ -221,20 +180,9 @@ foreach ($products as $p) {
         ]);
         $nV++;
     }
-    $revs = $p['reviews'] ?? [];
-    if (!$revs && $demoReviews) { $revs = sample_reviews($pid); }
-    foreach ($revs as $r) {
-        $rating = (int)($r['rating'] ?? 5);
-        if ($rating < 1 || $rating > 5) $rating = 5;
-        $insRev->execute([$pid, mb_substr($r['author'] ?? 'Anonymous', 0, 120), $rating, $r['body'] ?? '']);
-        $nR++;
-    }
 }
 $pdo->commit();
-out("✓ seeded products=$nP images=$nI variants=$nV reviews=$nR", $nl);
-if (!$demoReviews) {
-    out('  (reviews skipped — pass --demo-reviews to generate sample reviews)', $nl);
-}
+out("✓ seeded products=$nP images=$nI variants=$nV", $nl);
 
 // 4. Settings + content pages. Shared with migrate.php so a fresh install and
 //    a migrated install can never diverge.

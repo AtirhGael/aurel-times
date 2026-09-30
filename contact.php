@@ -123,7 +123,9 @@ require __DIR__ . '/app/header.php';
               <div class="small" style="color:var(--muted)">Phone</div>
               <a class="text-gold" style="font-size:1.05rem"
                  href="tel:<?= h(preg_replace('/[^0-9+]/', '', setting('phone'))) ?>"><?= h(setting('phone')) ?></a>
-              <div class="small" style="color:var(--muted)"><?= h(setting('support_hours')) ?></div>
+              <?php if (setting('support_hours') !== ''): ?>
+                <div class="small" style="color:var(--muted)"><?= h(setting('support_hours')) ?></div>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
 

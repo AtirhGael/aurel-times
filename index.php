@@ -30,12 +30,13 @@ $brands = db()->query(
      GROUP BY b.id ORDER BY c DESC'
 )->fetchAll();
 
-// Featured model rows (mirrors the original "Rolex Submariner / Daytona…" sections).
+// Featured collection rows. The third element is the term matched against
+// product names, which now all carry their collection name.
 $rows = [
-    ['Rolex Submariner', 'The definitive dive watch', 'Submariner'],
-    ['Rolex Daytona',    'Legendary racing chronographs', 'Daytona'],
-    ['Patek Philippe Nautilus', 'The ultimate luxury sports watch', 'Nautilus'],
-    ['Audemars Piguet Royal Oak', 'The icon of haute horlogerie', 'Royal Oak'],
+    ['Tideline', 'Built to dive — rotating bezels, serious water resistance', 'Tideline'],
+    ['Circuit',  'Chronographs with motorsport-inspired styling', 'Circuit'],
+    ['Monolith', 'Integrated bracelets, hard-edged cases', 'Monolith'],
+    ['Ascot',    'Slim dress watches that sit cleanly under a cuff', 'Ascot'],
 ];
 $rows = array_values(array_filter(array_map(function ($r) {
     $items = feat_row($r[2]);
@@ -52,7 +53,7 @@ require __DIR__ . '/app/_hero.php';
 <!-- Collection List -->
 <section class="container py-5">
   <h2 class="section-title">Collection List</h2>
-  <p class="section-sub">Shop <?= (int)$stats['p'] ?> timepieces across <?= (int)$stats['b'] ?> maisons</p>
+  <p class="section-sub">Shop <?= (int)$stats['p'] ?> timepieces across <?= (int)$stats['b'] ?> collections</p>
   <div class="row g-3">
     <?php foreach ($brands as $b): ?>
       <div class="col-4 col-md-3 col-lg-2">
@@ -84,22 +85,22 @@ require __DIR__ . '/app/_hero.php';
     </div>
   </section>
 
-  <?php if ($i === 0): // Hot Sale banners after the first row ?>
+  <?php if ($i === 0): // collection promo tiles after the first row ?>
     <section class="container py-5">
-      <h2 class="section-title mb-4">Hot Sale</h2>
+      <h2 class="section-title mb-4">Explore the Collections</h2>
       <div class="row g-4">
         <div class="col-md-6">
-          <div class="promo" style="background-image:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.55)),url('https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1200&auto=format&fit=crop');color:#fff">
-            <h3 class="text-white">Find Your GMT-Master</h3>
-            <p class="mb-3" style="max-width:320px">Perfect for globe-trotters. Dual-timezone Rolex icons.</p>
-            <a href="<?= url('shop.php?q=GMT') ?>" class="btn btn-red align-self-start px-4">Shop Now</a>
+          <div class="promo promo-brand">
+            <h3 class="text-white">Find Your Transit</h3>
+            <p class="mb-3" style="max-width:320px">For people who cross timezones often. Second-timezone tracking.</p>
+            <a href="<?= url('shop.php?q=Transit') ?>" class="btn btn-red align-self-start px-4">Shop Now</a>
           </div>
         </div>
         <div class="col-md-6">
-          <div class="promo" style="background-image:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.55)),url('https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?q=80&w=1200&auto=format&fit=crop');color:#fff">
-            <h3 class="text-white">Find a Day-Date Watch</h3>
-            <p class="mb-3" style="max-width:320px">The President. Prestige on the wrist, in gold and platinum.</p>
-            <a href="<?= url('shop.php?q=Day-Date') ?>" class="btn btn-red align-self-start px-4">Shop Now</a>
+          <div class="promo promo-brand">
+            <h3 class="text-white">Find Your Datum</h3>
+            <p class="mb-3" style="max-width:320px">Plain-spoken everyday watches, made for daily wear.</p>
+            <a href="<?= url('shop.php?q=Datum') ?>" class="btn btn-red align-self-start px-4">Shop Now</a>
           </div>
         </div>
       </div>
@@ -137,7 +138,7 @@ require __DIR__ . '/app/_hero.php';
         <div class="fs-4 mb-1">💬</div>
         <h6>Talk To A Person</h6>
         <p class="text-muted small mb-0">
-          <?= h(setting('support_hours')) ?> ·
+          <?php if (setting('support_hours') !== ''): ?><?= h(setting('support_hours')) ?> · <?php endif; ?>
           <a class="text-gold" href="<?= url('contact.php') ?>">contact us</a>
         </p>
       </div>

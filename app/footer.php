@@ -63,7 +63,7 @@ $socialLabels  = [
 
     <div class="row g-4 py-5">
       <div class="col-md-3">
-        <div class="brand-logo mb-2"><?= logo_html() ?></div>
+        <div class="brand-logo mb-2"><img class="lg-mark" src="<?= url('assets/brand/aurel-time-mark.png') ?>" alt="" width="54" height="46"><span class="lg-words"><?= logo_html() ?></span></div>
         <p class="small"><?= h(setting('tagline')) ?></p>
         <?php if ($socialLinks): ?>
           <div class="small">
@@ -125,7 +125,9 @@ $socialLabels  = [
           <?php if ($footerEmail !== ''): ?>
             <li><a href="mailto:<?= h($footerEmail) ?>"><?= h($footerEmail) ?></a></li>
           <?php endif; ?>
-          <li><?= h(setting('support_hours')) ?></li>
+          <?php if (setting('support_hours') !== ''): ?>
+            <li><?= h(setting('support_hours')) ?></li>
+          <?php endif; ?>
         </ul>
       </div>
     </div>

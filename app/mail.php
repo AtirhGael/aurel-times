@@ -62,7 +62,7 @@ function order_confirmation_body(array $order, array $items): string
     $lines[] = 'Thank you for your order.';
     $lines[] = '';
     $lines[] = 'Order #' . str_pad((string)$order['id'], 6, '0', STR_PAD_LEFT);
-    $lines[] = 'Placed: ' . date('F j, Y', strtotime((string)($order['created_at'] ?? 'now')));
+    $lines[] = 'Placed: ' . date('j F Y', strtotime((string)($order['created_at'] ?? 'now')));
     $lines[] = '';
     $lines[] = str_repeat('-', 56);
     foreach ($items as $it) {
@@ -72,7 +72,7 @@ function order_confirmation_body(array $order, array $items): string
             (int)$it['qty'],
             money($it['price'])
         );
-        if (!empty($it['grade'])) {
+        if (!empty($it['grade']) && $it['grade'] !== 'Standard') {
             $lines[] = '  ' . $it['grade'];
         }
     }
@@ -94,14 +94,18 @@ function order_confirmation_body(array $order, array $items): string
         $lines[] = '  ' . $addrTail;
     }
     $lines[] = '';
+    $lines[] = 'Payment: we will email you shortly to arrange payment. Nothing is charged '
+             . 'until then, and nothing is dispatched until payment has been received.';
+    $lines[] = '';
     $lines[] = 'What happens next: we prepare and dispatch your order within '
              . setting('ship_processing_days') . ' business day(s), then email you tracking. '
              . 'Delivery typically takes ' . delivery_estimate() . '.';
     $lines[] = '';
     $lines[] = 'Questions? Reply to this email or contact ' . setting('support_email')
-             . ' / ' . setting('phone') . ' (' . setting('support_hours') . ').';
+             . ' / ' . setting('phone')
+             . (setting('support_hours') !== '' ? ' (' . setting('support_hours') . ')' : '') . '.';
     $lines[] = '';
-    $lines[] = setting('legal_entity_name');
+    $lines[] = setting('legal_entity_name') !== '' ? setting('legal_entity_name') : setting('site_name');
     $lines[] = setting_address_line(', ');
     $lines[] = site_url();
     return implode("\r\n", $lines);

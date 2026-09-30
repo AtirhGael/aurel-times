@@ -78,7 +78,7 @@ require __DIR__ . '/header.php';
     <h1 class="mb-1" style="font-weight:600"><?= h($heading) ?></h1>
     <?php if (!empty($page['updated_at'])): ?>
       <p class="small mb-4" style="color:var(--muted)">
-        Last updated <?= h(date('F j, Y', strtotime((string)$page['updated_at']))) ?>
+        Last updated <?= h(date('j F Y', strtotime((string)$page['updated_at']))) ?>
       </p>
     <?php endif; ?>
 
@@ -104,8 +104,8 @@ require __DIR__ . '/header.php';
     <hr class="my-5">
     <div class="small" style="color:var(--muted)">
       Still have a question?
-      <a class="text-gold" href="<?= url('contact.php') ?>">Contact our team</a> —
-      we answer <?= h(setting('support_hours')) ?>.
+      <a class="text-gold" href="<?= url('contact.php') ?>">Contact our team</a><?php if (setting('support_hours') !== ''): ?> —
+      we answer <?= h(setting('support_hours')) ?><?php endif; ?>.
     </div>
   </div>
 </div>

@@ -48,7 +48,9 @@ require __DIR__ . '/app/header.php';
                    onerror="this.src='https://placehold.co/160x160/1a1a1a/c9a24b?text=Watch'">
               <div class="flex-grow-1">
                 <a href="<?= url('product.php?handle=' . urlencode($line['handle'])) ?>" class="d-block"><?= h($line['name']) ?></a>
-                <div class="text-muted small"><?= h($line['grade']) ?></div>
+                <?php if ($line['grade'] !== '' && $line['grade'] !== 'Standard'): ?>
+                  <div class="text-muted small"><?= h($line['grade']) ?></div>
+                <?php endif; ?>
                 <div class="price"><?= money($line['price']) ?></div>
               </div>
               <input type="number" name="qty[<?= (int)$line['variant_id'] ?>]" value="<?= (int)$line['qty'] ?>"

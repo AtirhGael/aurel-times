@@ -1,4 +1,4 @@
-# Alex Clean Factory Watches — PHP + MySQL Watch Store
+# Aurel Time — PHP + MySQL Watch Store
 
 A storefront built on plain PHP 8 + PDO (no framework), backed by MariaDB. Product data
 (1,140 watches) lives in MySQL; every business fact — address, phone, shipping terms,

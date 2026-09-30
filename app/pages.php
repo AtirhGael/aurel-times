@@ -114,6 +114,8 @@ function page_vars(): array
     $vars['free_shipping_threshold_money'] = money(setting_float('free_shipping_threshold'));
     $vars['flat_shipping_rate_money']      = money(setting_float('flat_shipping_rate'));
     $vars['address_oneline'] = setting_address_line();
+    // Always renders: the legal name once it is set, the store name until then.
+    $vars['trader_name'] = setting('legal_entity_name') !== '' ? setting('legal_entity_name') : setting('site_name');
 
     // {{url_return_policy}} etc., so policy pages can cross-link without
     // hardcoding a path that a future rewrite rule would break.
@@ -146,10 +148,37 @@ function page_vars(): array
 function render_placeholders(string $html): string
 {
     $vars = page_vars();
+    $html = drop_empty_blocks($html, $vars);
     return (string)preg_replace_callback(
         '/\{\{\s*([a-zA-Z0-9_]{1,64})\s*\}\}/',
         static function (array $m) use ($vars): string {
             return array_key_exists($m[1], $vars) ? h((string)$vars[$m[1]]) : $m[0];
+        },
+        $html
+    );
+}
+
+/**
+ * Remove every <p>, <li> or <tr> that references a setting which is currently
+ * empty. Without this an unfilled field prints as a broken sentence ("operated
+ * by .", "We ship with ."), which reads as a placeholder site. Page authors keep
+ * optional facts in their own element so only that element goes.
+ *
+ * Matching is non-greedy within one element, which is safe for these tags
+ * because none of them nest inside themselves in page HTML.
+ */
+function drop_empty_blocks(string $html, array $vars): string
+{
+    return (string)preg_replace_callback(
+        '#<(p|li|tr)\b[^>]*>.*?</\1>\s*#s',
+        static function (array $m) use ($vars): string {
+            preg_match_all('/\{\{\s*([a-zA-Z0-9_]{1,64})\s*\}\}/', $m[0], $keys);
+            foreach ($keys[1] as $k) {
+                if (array_key_exists($k, $vars) && trim((string)$vars[$k]) === '') {
+                    return '';
+                }
+            }
+            return $m[0];
         },
         $html
     );

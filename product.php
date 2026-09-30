@@ -113,7 +113,6 @@ require __DIR__ . '/app/header.php';
 
     <!-- Info -->
     <div class="col-lg-6">
-      <div class="text-uppercase text-muted small" style="letter-spacing:2px"><?= h($product['brand']) ?></div>
       <h1 class="serif mb-2" style="font-size:2rem"><?= h($product['name']) ?></h1>
       <?php if ($ratingRow['c'] > 0): ?>
         <div class="mb-2"><span class="rating"><?= str_repeat('★', (int)round($avg)) . str_repeat('☆', 5 - (int)round($avg)) ?></span>
@@ -124,7 +123,14 @@ require __DIR__ . '/app/header.php';
       <form method="post" action="<?= url('cart.php') ?>" class="my-4">
         <input type="hidden" name="action" value="add">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <label class="text-gold text-uppercase small d-block mb-2">Select Grade</label>
+        <?php if (count($variants) === 1): $v = $variants[0]; ?>
+          <input type="hidden" name="variant_id" value="<?= (int)$v['id'] ?>">
+          <div class="mb-3">
+            <span class="price fs-3"><?= money($v['price']) ?></span>
+            <?php if (!$v['in_stock']): ?><span class="badge bg-secondary ms-2">Out of stock</span><?php endif; ?>
+          </div>
+        <?php else: ?>
+        <label class="text-gold text-uppercase small d-block mb-2">Select Option</label>
         <div class="mb-3">
           <?php foreach ($variants as $i => $v): ?>
             <label class="d-flex justify-content-between align-items-center p-3 mb-2 rounded"
@@ -138,6 +144,7 @@ require __DIR__ . '/app/header.php';
             </label>
           <?php endforeach; ?>
         </div>
+        <?php endif; ?>
         <div class="d-flex gap-2 align-items-center">
           <input type="number" name="qty" value="1" min="1" max="20" class="form-control" style="width:90px">
           <button class="btn btn-gold btn-lg flex-grow-1">Add to Cart</button>
@@ -158,7 +165,7 @@ require __DIR__ . '/app/header.php';
       <ul class="list-unstyled small text-muted mt-3" style="line-height:1.9">
         <li>✓ Fully insured shipping · <?= h(delivery_estimate()) ?></li>
         <?php if (setting_int('warranty_months') > 0): ?>
-          <li>✓ <?= setting_int('warranty_months') ?>-month international warranty</li>
+          <li>✓ <?= setting_int('warranty_months') ?>-month warranty</li>
         <?php endif; ?>
         <?php if (setting_int('return_window_days') > 0): ?>
           <li>✓ <?= setting_int('return_window_days') ?>-day returns ·
@@ -169,13 +176,12 @@ require __DIR__ . '/app/header.php';
     </div>
   </div>
 
-  <!-- Reviews -->
+  <!-- Reviews: only verified reviews exist, so the section stays hidden until one does. -->
+  <?php if ($reviews): ?>
   <div class="row mt-5">
     <div class="col-lg-8">
       <h3 class="section-title mb-4">Customer Reviews</h3>
-      <?php if (!$reviews): ?>
-        <p class="text-muted">No reviews yet. Be the first to share your impression.</p>
-      <?php else: foreach ($reviews as $r): ?>
+      <?php foreach ($reviews as $r): ?>
         <div class="p-3 mb-3 rounded" style="background:var(--card);border:1px solid var(--line)">
           <div class="d-flex justify-content-between">
             <strong><?= h($r['author']) ?></strong>
@@ -185,9 +191,10 @@ require __DIR__ . '/app/header.php';
             <p class="text-muted small mb-0 mt-2"><?= h($r['body']) ?></p>
           <?php endif; ?>
         </div>
-      <?php endforeach; endif; ?>
+      <?php endforeach; ?>
     </div>
   </div>
+  <?php endif; ?>
 
   <!-- Related -->
   <?php if ($related): ?>

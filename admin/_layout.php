@@ -41,9 +41,12 @@ try {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= h($adminTitle) ?> · Admin · <?= h(setting('site_name')) ?></title>
+<link rel="icon" type="image/png" href="<?= url('assets/brand/favicon.png') ?>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  :root{--ink:#16181d;--line:#e3e5e9;--muted:#6b7280;--red:#c8102e;--bg:#f6f7f9}
+  /* Brand palette: --gold on the black sidebar, --red (kept for existing markup) is the
+     darker gold that stays readable as text on white. */
+  :root{--ink:#0c0c0e;--line:#e3e5e9;--muted:#6b7280;--gold:#c9a15c;--gold2:#b08a45;--red:#8a6a2f;--bg:#f6f7f9}
   body{background:var(--bg);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
   a{color:var(--red);text-decoration:none} a:hover{text-decoration:underline}
   .adm-wrap{display:flex;min-height:100vh}
@@ -52,13 +55,13 @@ try {
      inline so the "admin" tag sits beside it rather than on a third line. */
   .adm-brand{color:#fff;font-weight:700;font-size:1rem;padding:0 20px 16px;display:block;line-height:1.2}
   .adm-brand .lg-a{display:block;letter-spacing:1.4px}
-  .adm-brand .lg-b{color:var(--red);font-size:.62rem;letter-spacing:2.4px}
+  .adm-brand .lg-b{color:var(--gold);font-size:.62rem;letter-spacing:2.4px}
   .adm-side a.nav-i{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#cfd3da;font-size:.9rem}
   .adm-side a.nav-i:hover{background:rgba(255,255,255,.06);color:#fff;text-decoration:none}
-  .adm-side a.nav-i.on{background:var(--red);color:#fff}
+  .adm-side a.nav-i.on{background:var(--gold);color:#000}
   .adm-side .ico{width:18px;text-align:center;opacity:.9}
-  .adm-side .pill{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;font-size:.68rem;padding:1px 7px}
-  .adm-side a.nav-i.on .pill{background:#fff;color:var(--red)}
+  .adm-side .pill{margin-left:auto;background:var(--gold);color:#000;border-radius:10px;font-size:.68rem;padding:1px 7px}
+  .adm-side a.nav-i.on .pill{background:#000;color:var(--gold)}
   .adm-side .sep{border-top:1px solid rgba(255,255,255,.1);margin:14px 20px}
   .adm-main{flex:1;min-width:0;padding:26px 30px 60px}
   .adm-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
@@ -75,9 +78,9 @@ try {
   .form-label{font-size:.8rem;font-weight:600;color:#3f434b;margin-bottom:.25rem}
   .form-text{font-size:.78rem}
   .form-control,.form-select{font-size:.9rem;border-color:var(--line)}
-  .form-control:focus,.form-select:focus{border-color:var(--red);box-shadow:0 0 0 .2rem rgba(200,16,46,.1)}
-  .btn-primary{background:var(--red);border-color:var(--red)}
-  .btn-primary:hover{background:#a60d26;border-color:#a60d26}
+  .form-control:focus,.form-select:focus{border-color:var(--red);box-shadow:0 0 0 .2rem rgba(201,161,92,.18)}
+  .btn-primary{background:var(--gold);border-color:var(--gold);color:#000}
+  .btn-primary:hover,.btn-primary:focus{background:var(--gold2);border-color:var(--gold2);color:#000}
   .grp{scroll-margin-top:20px}
   .grp+.grp{margin-top:20px}
   .chk-row{display:flex;align-items:flex-start;gap:9px}
@@ -96,7 +99,7 @@ try {
 <body>
 <div class="adm-wrap">
   <aside class="adm-side">
-    <a class="adm-brand" href="<?= admin_url() ?>"><?= logo_html() ?> <small style="opacity:.6">admin</small></a>
+    <a class="adm-brand" href="<?= admin_url() ?>"><img src="<?= url('assets/brand/aurel-time-mark.png') ?>" alt="" width="40" height="34" style="display:block;margin-bottom:8px"><?= logo_html() ?> <small style="opacity:.6">admin</small></a>
     <?php foreach ($adminNav as $file => [$label, $icon]): ?>
       <a class="nav-i<?= $currentFile === $file ? ' on' : '' ?>" href="<?= admin_url($file) ?>">
         <span class="ico"><?= $icon ?></span><?= h($label) ?>

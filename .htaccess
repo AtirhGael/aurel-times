@@ -1,4 +1,4 @@
-# Alex Clean Factory Watches — Apache configuration.
+# Aurel Time — Apache configuration.
 # Deliberately minimal: this app has no front controller and every page is a
 # real file, so there is no routing to do here.
 
@@ -61,7 +61,7 @@ RedirectMatch 404 (^|/)scripts/
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     # HSTS is a one-way door: once a browser sees this it refuses plain HTTP for
     # this domain for the full max-age, and there is no way to call that back
-    # from the server side. Uncomment only AFTER https://alexcleanwatchfactory.site
+    # from the server side. Uncomment only AFTER https://aureltime.site
     # is confirmed loading with a valid certificate. Drop includeSubDomains if any
     # subdomain is not yet on HTTPS.
     # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"

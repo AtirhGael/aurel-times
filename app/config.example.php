@@ -32,7 +32,7 @@ defined('DB_CHARSET') || define('DB_CHARSET', 'utf8mb4');
 // setting('site_name') / setting('currency_symbol') and are editable in
 // admin/settings.php. app/settings_defs.php seeds from these constants, and
 // the app falls back to them when the database is unreachable.
-define('SITE_NAME', 'Alex Clean Factory Watches');
+define('SITE_NAME', 'Aurel Time');
 define('CURRENCY', '£');
 
 // Optional shared secret allowing migrate.php to run over HTTP from loopback.

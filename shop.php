@@ -55,7 +55,20 @@ $allBrands = db()->query(
      GROUP BY b.id ORDER BY b.name'
 )->fetchAll();
 
-$pageTitle = $brandRow ? $brandRow['name'] : ($q !== '' ? "Search: $q" : 'Shop All Watches');
+$pageTitle = $brandRow ? $brandRow['name'] . ' Collection' : ($q !== '' ? "Search: $q" : 'Shop All Watches');
+
+// Canonical keeps the params that change which products are listed (collection,
+// page) and drops sort order and search, which only reorder or filter ad hoc. The
+// header default would point every collection page at plain shop.php, which
+// contradicts the collection URLs submitted in the sitemap.
+$canonParams = array_filter([
+    'brand' => $brandRow ? $brand : '',
+    'page'  => $page > 1 ? (string)$page : '',
+], fn($v) => $v !== '');
+$canonical = abs_url('shop.php' . ($canonParams ? '?' . http_build_query($canonParams) : ''));
+if ($q !== '') {
+    $robots = 'noindex, follow';
+}
 require __DIR__ . '/app/header.php';
 
 /** Build a query string preserving current filters, overriding some keys. */
@@ -73,11 +86,11 @@ function qs(array $over = []): string {
     <!-- Sidebar -->
     <aside class="col-lg-3 mb-4">
       <div class="p-3 rounded" style="background:var(--card);border:1px solid var(--line)">
-        <h6 class="text-gold text-uppercase small">Brands</h6>
+        <h6 class="text-gold text-uppercase small">Collections</h6>
         <div style="max-height:420px;overflow:auto">
           <a href="<?= url('shop.php' . qs(['brand' => null, 'page' => null])) ?>"
              class="d-flex justify-content-between py-1 <?= $brand === '' ? 'text-gold' : '' ?>">
-             All Brands</a>
+             All Collections</a>
           <?php foreach ($allBrands as $b): ?>
             <a href="<?= url('shop.php' . qs(['brand' => $b['slug'], 'page' => null])) ?>"
                class="d-flex justify-content-between py-1 <?= $brand === $b['slug'] ? 'text-gold' : '' ?>">

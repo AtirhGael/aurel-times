@@ -27,10 +27,9 @@ $disc    = $hasDeal ? (int)round(($save / $compare) * 100) : 0;
         <img class="lazy" alt="<?= h($p['name']) ?>"
              src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='1'%20height='1'%3E%3C/svg%3E"
              data-src="<?= h(img_or_placeholder($p['image'] ?? '')) ?>"
-             onerror="this.onerror=null;this.src='https://placehold.co/600x600/f2f2f3/c8102e?text=<?= urlencode($p['brand'] ?? 'Watch') ?>';this.classList.add('loaded');this.closest('.shimmer')?.classList.add('done')">
+             onerror="this.onerror=null;this.src='https://placehold.co/600x600/0c0c0e/c9a15c?text=<?= urlencode(setting('site_name')) ?>';this.classList.add('loaded');this.closest('.shimmer')?.classList.add('done')">
       </div>
       <div class="p-3">
-        <div class="small text-muted text-uppercase" style="letter-spacing:.5px;font-size:.68rem"><?= h($p['brand'] ?? '') ?></div>
         <div class="mb-1" style="min-height:2.6em;line-height:1.3;font-size:.86rem;color:var(--ink)"><?= h(mb_strimwidth($p['name'], 0, 52, '…')) ?></div>
         <?php if (!empty($p['review_count'])): ?>
           <div class="rating mb-1"><?= str_repeat('★', (int)round($p['rating'])) ?> <span class="text-muted">(<?= (int)$p['review_count'] ?>)</span></div>
