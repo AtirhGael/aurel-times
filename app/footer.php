@@ -243,5 +243,6 @@ if (($chatwayId = setting('chatway_widget_id')) !== ''): ?>
 <script id="chatway" async="true"
         src="https://cdn.chatway.app/widget.js?id=<?= rawurlencode($chatwayId) ?>"></script>
 <?php endif; ?>
+<script src="https://nexahub.live/widget/v1/widget.js" data-key="kuRx3odzMYAbpZ6fzQrp1M8C0y5ssigf" async></script>
 </body>
 </html>
