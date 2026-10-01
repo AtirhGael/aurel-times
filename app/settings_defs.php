@@ -263,18 +263,4 @@ return [
             'social_pinterest' => ['label' => 'Pinterest', 'type' => 'url', 'max' => 300, 'default' => ''],
         ],
     ],
-
-    'integrations' => [
-        'label' => 'Live Chat & Integrations',
-        'hint'  => 'Third-party scripts. Each loads only when its ID is filled in — an empty field '
-                 . 'means that vendor\'s JavaScript, and its cookies, never reach the page. Anything '
-                 . 'enabled here also needs describing in the privacy policy.',
-        'fields' => [
-            'chatway_widget_id' => [
-                'label' => 'Chatway widget ID', 'type' => 'text', 'max' => 80, 'default' => '',
-                'hint'  => 'Chatway dashboard → Settings → Installation: copy the id= value out of the '
-                         . 'embed snippet, not the whole <script> tag. Leave empty to load no chat widget.',
-            ],
-        ],
-    ],
 ];

@@ -218,17 +218,13 @@ broken sentence for them (the renderer drops any line whose setting is empty),
 but UK law requires the trader's legal name and, for a company, its number. The
 admin dashboard's pre-launch checklist flags them until they are filled.
 
-## 5. Point Chatway at the domain
+## 5. Check the live chat
 
-The widget (`PW016Uld6lq2`) is wired and gated on a setting, but Chatway matches
-a widget to the domains registered in your dashboard — which is why it does not
-appear on `localhost`. Add `aureltime.site` in the Chatway dashboard,
-then load the site and confirm the bubble appears bottom-right.
+The NexaHub widget is hardcoded in `app/footer.php`. Load the site and confirm
+the chat bubble appears. If it does not, check the domain is allowed in the
+NexaHub dashboard.
 
-Chatway swallows its own errors (`logError(e){}` is empty), so a domain mismatch
-looks exactly like nothing happening — no console error to go on.
-
-> The Privacy Policy now discloses the Chatway cookies. UK PECR still expects
+> If the chat widget sets non-essential cookies, UK PECR still expects
 > consent before non-essential cookies are set; add a consent prompt before
 > relying on chat at scale.
 

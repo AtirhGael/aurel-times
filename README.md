@@ -102,27 +102,15 @@ regardless. The confirmation screen tells the customer honestly when the email c
 be sent rather than claiming it was. Configure `[mail function]` in `php.ini` for real
 delivery.
 
-## Live chat (Chatway)
+## Live chat (NexaHub)
 
-Set **Chatway widget ID** at *Admin → Settings → Live Chat & Integrations* — the `id=`
-value out of your Chatway embed snippet, not the whole `<script>` tag. While it is empty
-the storefront loads **no chat JavaScript and no chat cookies at all**, same gate the
-Google Analytics field uses.
+The NexaHub widget script is hardcoded before `</body>` in `app/footer.php`, so it loads
+on every storefront page — never in `/admin`, which has its own shell. To change the
+widget key, edit the `data-key` attribute there. If the site ever sets a
+Content-Security-Policy, allow `https://nexahub.live` in `script-src` and `frame-src`.
 
-Once set, `app/footer.php` emits the widget before `</body>` on storefront pages only —
-never in `/admin`, which has its own shell. Two entry points appear automatically: a
-"Start a live chat" link in the footer's *Talk To Us* tile and a *Live chat* row on the
-contact page. Both carry `class="js-chat"`, handled by a delegated listener in
-`app/footer.php`; drop that class on any element to make it open the widget. The handler
-only calls `preventDefault()` once `$chatway` actually exists, so if the vendor script is
-blocked the link still falls through to the contact form instead of going dead.
-
-The widget ID is escaped with `rawurlencode()` because it lands in a query string inside a
-`src` attribute.
-
-> Chatway sets its own cookies. `app/page_defaults.php` still tells visitors only a
-> strictly necessary session cookie is used — correct that at *Admin → Pages → Privacy
-> Policy* before enabling chat on a public site.
+> The chat widget may set its own cookies. Check that *Admin → Pages → Privacy Policy*
+> describes them before relying on chat on a public site.
 
 ## Google Merchant Center
 

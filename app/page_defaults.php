@@ -170,7 +170,7 @@ HTML,
 <p>We process order data to perform our contract with you, keep transaction records to meet our legal obligations, and answer enquiries in our legitimate interest in helping you.</p>
 
 <h2>Who we share it with</h2>
-<p>Only with those who need it to fulfil your order or answer you: our delivery carriers ({{ship_carriers}}) receive your name, address and phone number; our live chat provider (Chatway) processes messages you send through the chat window. We disclose data to authorities only where the law requires it.</p>
+<p>Only with those who need it to fulfil your order or answer you: our delivery carriers ({{ship_carriers}}) receive your name, address and phone number; our live chat provider (NexaHub) processes messages you send through the chat window. We disclose data to authorities only where the law requires it.</p>
 
 <h2>Cookies</h2>
 <p>We use a strictly necessary session cookie to keep your basket and sign-in working. The live chat window sets its own cookies so that a conversation continues between pages. If we enable analytics, it is configured with IP anonymisation. We do not use advertising cookies.</p>

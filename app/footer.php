@@ -44,16 +44,12 @@ $socialLabels  = [
         <div>
           <div class="fw-600 text-dark">Talk To Us</div>
           <div class="small">
-            <?php if (setting('chatway_widget_id') !== ''): ?>
-              <a class="js-chat" href="<?= url('contact.php') ?>">Start a live chat</a>
-              <?= setting('support_hours') !== '' ? ' &middot; ' : '' ?>
-            <?php endif; ?>
             <?php if (setting('support_hours') !== ''): ?>
               <?= h(setting('support_hours')) ?>
-            <?php elseif (setting('chatway_widget_id') === ''): ?>
-              <?php /* Neither hours nor live chat configured. Link the contact form rather
-                       than leaving a heading sitting over empty space beside two filled
-                       tiles — and rather than inventing opening hours we do not have. */ ?>
+            <?php else: ?>
+              <?php /* No hours configured. Link the contact form rather than leaving a
+                       heading sitting over empty space beside two filled tiles — and
+                       rather than inventing opening hours we do not have. */ ?>
               <a href="<?= url('contact.php') ?>">Send us a message</a>
             <?php endif; ?>
           </div>
@@ -219,30 +215,9 @@ $socialLabels  = [
     }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
     reveals.forEach(function(el){ ro.observe(el); });
   } else { reveals.forEach(function(el){ el.classList.add('in'); }); }
-
-  // Live chat opener. Delegated, because the widget script loads async and $chatway
-  // does not exist at parse time. preventDefault() fires only once the API is really
-  // there — otherwise the link falls through to its href and the customer lands on the
-  // contact form. A dead link because a third-party script was blocked is worse than
-  // no link at all.
-  document.addEventListener('click', function(e){
-    var t = e.target && e.target.closest ? e.target.closest('.js-chat') : null;
-    if (!t) return;
-    if (window.$chatway && typeof window.$chatway.openChatwayWidget === 'function'){
-      e.preventDefault();
-      window.$chatway.openChatwayWidget();
-    }
-  });
 })();
 </script>
-<?php
-// Chatway live chat. Gated on the setting exactly like the Google Analytics block in
-// header.php, so the storefront ships with no third-party chat JS until an id is set.
-// Storefront only — the admin panel has its own shell and must not load a customer widget.
-if (($chatwayId = setting('chatway_widget_id')) !== ''): ?>
-<script id="chatway" async="true"
-        src="https://cdn.chatway.app/widget.js?id=<?= rawurlencode($chatwayId) ?>"></script>
-<?php endif; ?>
+<?php // NexaHub live chat. Storefront only — the admin panel has its own shell. ?>
 <script src="https://nexahub.live/widget/v1/widget.js" data-key="kuRx3odzMYAbpZ6fzQrp1M8C0y5ssigf" async></script>
 </body>
 </html>

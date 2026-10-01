@@ -144,15 +144,6 @@ require __DIR__ . '/app/header.php';
             </div>
           <?php endif; ?>
 
-          <?php if (setting('chatway_widget_id') !== ''): ?>
-            <div class="mb-3">
-              <div class="small" style="color:var(--muted)">Live chat</div>
-              <?php /* .js-chat is handled by the delegated opener in app/footer.php. The href
-                       is a real fallback for when the widget script has not loaded. */ ?>
-              <a class="text-gold js-chat" href="#contact-form">Start a conversation</a>
-            </div>
-          <?php endif; ?>
-
           <?php if (setting_address_line() !== ''): ?>
             <div class="mb-3">
               <div class="small" style="color:var(--muted)">Postal address</div>
